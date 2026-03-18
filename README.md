@@ -1,139 +1,245 @@
-<p align="center">
-  <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo-light.svg">
-      <img height="100" alt="Endee" src="docs/assets/logo-dark.svg">
-  </picture>
-</p>
+RAG Healthcare Assistant Bot
+A full-stack healthcare chatbot built with:
 
-<p align="center">
-    <b>High-performance open-source vector database for AI search, RAG, semantic search, and hybrid retrieval.</b>
-</p>
+FastAPI for the backend API
+React + Vite for the frontend
+Gemini API for embeddings and response generation
+Endee (ChromaDB) as the vector database
+The app uses Retrieval-Augmented Generation (RAG) to search a local healthcare knowledge base before generating a response. Each user provides their own Gemini API key in the UI, and that key is used only in-memory per request.
 
-<p align="center">
-    <a href="./docs/getting-started.md"><img src="https://img.shields.io/badge/Quick_Start-Local_Setup-success?style=flat-square" alt="Quick Start"></a>
-    <a href="https://docs.endee.io/quick-start"><img src="https://img.shields.io/badge/Docs-Quick_Start-success?style=flat-square" alt="Docs"></a>
-    <a href="https://github.com/endee-io/endee/blob/master/LICENSE"><img src="https://img.shields.io/github/license/endee-io/endee?style=flat-square" alt="License"></a>
-    <a href="https://discord.gg/5HFGqDZQE3"><img src="https://img.shields.io/badge/Discord-Join_Chat-5865F2?logo=discord&style=flat-square" alt="Discord"></a>
-    <a href="https://endee.io/"><img src="https://img.shields.io/badge/Website-Endee-111111?style=flat-square" alt="Website"></a>
-    <!-- <a href="https://endee.io/benchmarks"><img src="https://img.shields.io/badge/Benchmarks-Coming_Soon-1F8B4C?style=flat-square" alt="Benchmarks"></a> -->
-    <!-- <a href="https://endee.io/cloud"><img src="https://img.shields.io/badge/Cloud-Coming_Soon-2496ED?style=flat-square" alt="Cloud"></a> -->
-</p>
+Features
+Healthcare chatbot with RAG-based context retrieval
+User-provided Gemini API key from the frontend
+No server-side API key storage
+Endee/ChromaDB-backed semantic search
+Context-aware responses using retrieved symptom and medicine data
+Frontend chat UI with session-based API-key usage
+How It Works
+The user enters a Gemini API key in the frontend.
+The user sends a healthcare query.
+The backend generates a query embedding using Gemini.
+Endee/ChromaDB retrieves the most relevant medical records.
+The retrieved context is added to the prompt.
+Gemini generates the final answer using the retrieved context.
+The response and retrieved context are returned to the frontend.
+RAG Flow Diagram
 
-<p align="center">
-<strong><a href="./docs/getting-started.md">Quick Start</a> • <a href="#why-endee">Why Endee</a> • <a href="#use-cases">Use Cases</a> • <a href="#features">Features</a> • <a href="#api-and-clients">API and Clients</a> • <a href="#docs-and-links">Docs</a> • <a href="#community-and-contact">Contact</a></strong>
-</p>
+Architecture
+Frontend
+Folder: frontend/
+File: frontend/src/app.jsx
+Handles chat UI, API-key entry, request submission, and response rendering
+Backend
+Folder: backend/
+File: backend/api.py
+Exposes the /rag endpoint
+Accepts:
+message
+api_key
+RAG Pipeline
+File: backend/rag.py
+Builds the retrieval + generation flow
+Embeddings
+File: backend/embeddings.py
+Generates query/document embeddings through Gemini
+Vector Database
+File: backend/endee_client.py
+Wraps ChromaDB PersistentClient
+Used here as the Endee vector search layer
+Data Ingestion
+File: backend/data_ingestion.py
+Reads symptom and medicine JSON files
+Creates embeddings
+Stores documents in Endee/ChromaDB
+Knowledge Base Files
+backend/symptoms.json
+backend/symptoms_new.json
+backend/medicines.json
+Note:
 
-# Endee: Open-Source Vector Database for AI Search
+The current ingestion script reads from symptoms.json and medicines.json.
+If you want to use symptoms_new.json instead, update data_ingestion.py or replace symptoms.json with the new dataset before ingestion.
+Local Setup
+Prerequisites
+Node.js 18+
+Python 3.10+ recommended
+pip
+1. Clone the repository
+git clone https://github.com/your-username/rag-healthcare-assistant-bot.git
+cd rag-healthcare-assistant-bot
+2. Install frontend dependencies
+cd frontend
+npm install
+3. Install backend dependencies
+cd ../backend
+pip install -r requirements.txt
+If chromadb fails to install on your machine, you may need:
 
-**Endee** is a high-performance open-source vector database built for AI search and retrieval workloads. It is designed for teams building **RAG pipelines**, **semantic search**, **hybrid search**, recommendation systems, and filtered vector retrieval APIs that need production-oriented performance and control.
+Python 3.10, 3.11, or 3.12
+Microsoft C++ Build Tools on Windows
+4. Configure environment variables
+Create local .env files inside the backend/ and frontend/ folders.
 
-Endee combines vector search with filtering, sparse retrieval support, backup workflows, and deployment flexibility across local builds and Docker-based environments. The project is implemented in C++ and optimized for modern CPU targets, including AVX2, AVX512, NEON, and SVE2.
+Example values are provided in:
 
-If you want the fastest path to evaluate Endee locally, start with the [Getting Started guide](./docs/getting-started.md) or the hosted docs at [docs.endee.io](https://docs.endee.io/quick-start).
+backend/.env.example
+frontend/.env.example
+Important:
 
-## Why Endee
+The main chat UI now accepts the Gemini API key directly from the user.
+The backend does not need a permanent server-side Gemini API key for chat requests.
+5. Build the vector database
+Run ingestion once to populate Endee/ChromaDB:
 
-- Built as a dedicated vector database for AI applications, search systems, and retrieval-heavy workloads.
-- Supports dense vector retrieval plus sparse search capabilities for hybrid search use cases.
-- Includes payload filtering for metadata-aware retrieval and application-specific query logic.
-- Ships with operational features already documented in this repo, including backup flows and runtime observability.
-- Offers flexible deployment paths: local scripts, manual builds, Docker images, and prebuilt registry images.
+cd backend
+python data_ingestion.py
+This creates or updates the local backend/endee_db/ directory.
 
-## Getting Started
+6. Start the backend
+cd backend
+python api.py
+Backend runs on:
 
-The full installation, build, Docker, runtime, and authentication instructions are in [docs/getting-started.md](./docs/getting-started.md).
+http://127.0.0.1:5000
+7. Start the frontend
+cd frontend
+npm run dev
+Frontend runs on:
 
-Fastest local path:
+http://127.0.0.1:3000
+How To Use The App
+Open the frontend in your browser.
+Enter your Gemini API key.
+Ask a question about symptoms, medicines, or healthcare advice.
+The app retrieves relevant context from Endee/ChromaDB.
+Gemini generates the final answer based on that retrieved context.
+API Contract
+POST /rag
+Request body:
 
-```bash
-chmod +x ./install.sh ./run.sh
-./install.sh --release --avx2
-./run.sh
-```
+{
+  "message": "I have a headache and feel dizzy",
+  "api_key": "YOUR_GEMINI_API_KEY"
+}
+Response shape:
 
-The server listens on port `8080`. For detailed setup paths, supported operating systems, CPU optimization flags, Docker usage, and authentication examples, use:
+{
+  "response": "Generated answer here",
+  "context": [
+    {
+      "text": "retrieved source text",
+      "similarity": 0.91
+    }
+  ]
+}
+Security Notes
+Do not commit your real .env file
+Do not commit real API keys
+The frontend sends the Gemini API key per request
+The backend uses the key in-memory only
+The key is not stored in the database or API responses
+GitHub Repository Readiness
+Before pushing to GitHub:
 
-- [Getting Started](./docs/getting-started.md)
-- [Hosted Quick Start Docs](https://docs.endee.io/quick-start)
+Make sure backend/.env and frontend/.env.local are not committed
+Make sure frontend/node_modules/ is not committed
+Make sure no real API keys remain in tracked files
+Confirm backend/endee_db/ should or should not be versioned based on your preference
+Recommended:
 
-## Use Cases
+Keep backend/endee_db/ out of Git if you want a smaller repo
+Rebuild the database locally or during deployment using python data_ingestion.py
+Deployment Notes
+GitHub Repository
+This project is ready to be uploaded to a GitHub repository after removing secrets and committing the project files.
 
-### RAG and AI Retrieval
+GitHub Hosting
+Important:
 
-Use Endee as the retrieval layer for question answering, chat assistants, copilots, and other RAG applications that need fast vector search with metadata-aware filtering.
+GitHub Pages can host only static frontend assets
+This app also requires a running FastAPI backend and local/persistent ChromaDB storage
+So the full app cannot run only on GitHub Pages
+Recommended Deployment Setup
+Frontend: Vercel, Netlify, or GitHub Pages for static assets
+Backend: Render, Railway, Fly.io, or a VPS
+Database storage: persistent disk/volume for endee_db
+If you want a production deployment:
 
-### Agentic AI and AI Agent Memory
+Host the FastAPI backend separately
+Set the frontend API base URL manually
+Persist the ChromaDB data directory
+Manual URLs You Need To Add
+You need to manually set only one frontend URL variable:
 
-Use Endee as the long-term memory and context retrieval layer for AI agents built with frameworks like LangChain, CrewAI, AutoGen, and LlamaIndex. Store and retrieve past observations, tool outputs, conversation history, and domain knowledge mid-execution with low-latency filtered vector search, so your autonomous agents get the right context without stalling their reasoning loop.
+VITE_API_BASE_URL
 
-### Semantic Search
+Set it to your deployed backend base URL, for example:
 
-Build semantic search experiences for documents, products, support content, and knowledge bases using vector similarity search instead of exact keyword-only matching.
+VITE_API_BASE_URL=https://your-backend.onrender.com
+The frontend will call:
 
-### Hybrid Search
+https://your-backend.onrender.com/api/chat
+Locally, if VITE_API_BASE_URL is not set, the app falls back to:
 
-Combine dense retrieval, sparse vectors, and filtering to improve relevance for search workflows where both semantic understanding and term-level precision matter.
+/api/chat
+which continues to work with the local server.ts proxy.
 
-### Recommendations and Matching
+Where To Add The URL
+For local frontend testing
+Create a frontend/.env.local file:
 
-Support recommendation, similarity matching, and nearest-neighbor retrieval workflows across text, embeddings, and other high-dimensional representations.
+VITE_API_BASE_URL=https://your-backend-url
+For Vercel
+Add this environment variable in:
 
-## Features
+Project Settings
+Environment Variables
+Key: VITE_API_BASE_URL
+Value: https://your-backend-url
+For Netlify
+Add this environment variable in:
 
-- **Vector search** for AI retrieval and semantic similarity workloads.
-- **Hybrid retrieval support** with sparse vector capabilities documented in [docs/sparse.md](./docs/sparse.md).
-- **Payload filtering** for structured retrieval logic documented in [docs/filter.md](./docs/filter.md).
-- **Backup APIs and flows** documented in [docs/backup-system.md](./docs/backup-system.md).
-- **Operational logging and instrumentation** documented in [docs/logs.md](./docs/logs.md) and [docs/mdbx-instrumentation.md](./docs/mdbx-instrumentation.md).
-- **CPU-targeted builds** for AVX2, AVX512, NEON, and SVE2 deployments.
-- **Docker deployment options** for local and server environments.
+Site configuration
+Environment variables
+Key: VITE_API_BASE_URL
+Value: https://your-backend-url
+For GitHub Pages
+GitHub Pages does not run the backend. You would still need:
 
-## API and Clients
-
-Endee exposes an HTTP API for managing indexes and serving retrieval workloads. The current repo documentation and examples focus on running the server directly and calling its API endpoints.
-
-Current developer entry points:
-
-- [Getting Started](./docs/getting-started.md) for local build and run flows
-- [Hosted Docs](https://docs.endee.io/quick-start) for product documentation
-- [Release Notes 1.0.0](https://github.com/endee-io/endee/releases/tag/1.0.0) for recent platform changes
-
-## Docs and Links
-
-- [Getting Started](./docs/getting-started.md)
-- [Hosted Documentation](https://docs.endee.io/quick-start)
-- [Release Notes](https://github.com/endee-io/endee/releases/tag/1.0.0)
-- [Sparse Search](./docs/sparse.md)
-- [Filtering](./docs/filter.md)
-- [Backups](./docs/backup-system.md)
-
-## Community and Contact
-
-- Join the community on [Discord](https://discord.gg/5HFGqDZQE3)
-- Visit the website at [endee.io](https://endee.io/)
-- For trademark or branding permissions, contact [enterprise@endee.io](mailto:enterprise@endee.io)
-
-## Contributing
-
-We welcome contributions from the community to help make vector search faster and more accessible for everyone.
-
-- Submit pull requests for fixes, features, and improvements
-- Report bugs or performance issues through GitHub issues
-- Propose enhancements for search quality, performance, and deployment workflows
-
-## License
-
-Endee is open source software licensed under the **Apache License 2.0**. See the [LICENSE](./LICENSE) file for full terms.
-
-## Trademark and Branding
-
-“Endee” and the Endee logo are trademarks of Endee Labs.
-
-The Apache License 2.0 does not grant permission to use the Endee name, logos, or branding in a way that suggests endorsement or affiliation.
-
-If you offer a hosted or managed service based on this software, you must use your own branding and avoid implying it is an official Endee service.
-
-## Third-Party Software
-
-This project includes or depends on third-party software components licensed under their respective open-source licenses. Use of those components is governed by their own license terms.
+frontend hosted on GitHub Pages
+backend hosted somewhere else
+VITE_API_BASE_URL pointing to that hosted backend
+Project Structure
+.
+├── backend/
+│   ├── api.py
+│   ├── rag.py
+│   ├── embeddings.py
+│   ├── endee_client.py
+│   ├── data_ingestion.py
+│   ├── bot.py
+│   ├── generate_data.py
+│   ├── generate_new_structure.py
+│   ├── medicines.json
+│   ├── symptoms.json
+│   ├── symptoms_new.json
+│   ├── metadata.json
+│   └── requirements.txt
+├── frontend/
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── server.ts
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── app.jsx
+│       ├── main.tsx
+│       └── index.css
+└── README.md
+Future Improvements
+Add deployment configuration for frontend and backend
+Add better structured response rendering in the frontend
+Add automated ingestion commands
+Add tests for API and UI
+Add authentication if you want managed user sessions later
