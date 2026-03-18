@@ -1,4 +1,6 @@
 # RAG Healthcare Assistant Bot
+<img width="1528" height="905" alt="image" src="https://github.com/user-attachments/assets/739416bd-2b3e-428a-927c-5dc10828c613" />
+
 
 A full-stack healthcare chatbot built with:
 
